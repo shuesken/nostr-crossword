@@ -1,5 +1,5 @@
 # Nostr Spec for Crossword Events
-(might become an NIP sometime)
+(might become a NIP sometime)
 
 ## Flow
 Clients join a game by choosing the ID of a **Crossword Game** Event, and polling for the last **Crossword Move** Event by `created_at`. They make a move by submitting their own **Crossword Move** event.
@@ -33,11 +33,11 @@ There are three types of crossword events:
 ### Crossword Game
 ```js
 {
-    "content": ""
-    {
+    "content": "",
+    "tags" [
         ["e", `${idOfCrosswordDefEvent}`, `${preferredRelayForCrosswordDefEvent}`,
         "root"]
-    }
+    ]
     ...restOfEvent
 }
 ```
@@ -51,9 +51,9 @@ There are three types of crossword events:
             // crossword state encoding
         }
     },
-    {
+    "tags": [
         ["e", `${idOfCrosswordGameEvent}`, "root"],
-    },
+    ],
     ...restOfEvent
 }
 ```
