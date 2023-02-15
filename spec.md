@@ -34,7 +34,7 @@ There are three types of crossword events:
 ```js
 {
     "content": "",
-    "tags" [
+    "tags": [
         ["e", `${idOfCrosswordDefEvent}`, `${preferredRelayForCrosswordDefEvent}`,
         "root"]
     ]
