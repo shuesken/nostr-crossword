@@ -17,7 +17,7 @@ There are three types of crossword events:
 {
     
     "content": {
-        "type": "nytsyn" // what data format we're using for the crossword; could be "puz", I choose to name "nytsyn" the format we get from e.g. https://nytsyn.pzzl.com/nytsyn-crossword/nytsyncrossword?date=230210
+        "type": "nytsyn", // what data format we're using for the crossword; could be "puz", I choose to name "nytsyn" the format we get from e.g. https://nytsyn.pzzl.com/nytsyn-crossword/nytsyncrossword?date=230210
         "data": "...", // the content, in the "nytsn" case, just a string
         "meta": { // any optional, additional metadata a client might choose to display
             "author": "some author",
@@ -37,7 +37,7 @@ There are three types of crossword events:
     "tags": [
         ["e", `${idOfCrosswordDefEvent}`, `${preferredRelayForCrosswordDefEvent}`,
         "root"]
-    ]
+    ],
     ...restOfEvent
 }
 ```
