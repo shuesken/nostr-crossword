@@ -14,9 +14,7 @@ There are three types of crossword events:
 
 ### Crossword Definition
 ```js
-{
-    
-    "content": {
+content = {
         "type": "nytsyn", // what data format we're using for the crossword; could be "puz", I choose to name "nytsyn" the format we get from e.g. https://nytsyn.pzzl.com/nytsyn-crossword/nytsyncrossword?date=230210
         "data": "...", // the content, in the "nytsn" case, just a string
         "meta": { // any optional, additional metadata a client might choose to display
@@ -25,38 +23,31 @@ There are three types of crossword events:
             "canonicalSource": "https://nytimes.com/whatever/the/link/is",
             ...restOfMeta,
         }
-    },
-    ...restOfEvent
-}
+    }
+tags = []
 ```
 
 ### Crossword Game
 ```js
-{
-    "content": "",
-    "tags": [
-        ["e", idOfCrosswordDefEvent, preferredRelayForCrosswordDefEvent,
-        "root"]
+content = ''
+tags = [
+        ["e", idOfCrosswordDefEvent, preferredRelayForCrosswordDefEvent, "root"]
     ],
-    ...restOfEvent
-}
 ```
 
 ### Crossword Move
 ```js
-{
-    "content": { // encoding the state of the crossword
-        "type": "simple", // leaving this to be possibly updated in the future
-        "data": {
+content = { // encoding the state of the crossword
+        type: "simple", // leaving this to be possibly updated in the future
+        data: {
             // crossword state encoding
         }
-    },
-    "tags": [
+    }
+
+tags = [
         ["e", idOfCrosswordGameEvent, "root"],
         ["d", idOfCrosswordGameEvent], // used for parametrized replacing
-    ],
-    ...restOfEvent
-}
+    ]
 ```
 
 The Crossword Move event should be replacable; it contains the entire state for one pubkey participating in the game.
