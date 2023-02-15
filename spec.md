@@ -53,6 +53,7 @@ There are three types of crossword events:
     },
     "tags": [
         ["e", idOfCrosswordGameEvent, "root"],
+        ["d", idOfCrosswordGameEvent], // used for parametrized replacing
     ],
     ...restOfEvent
 }
