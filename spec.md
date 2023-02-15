@@ -1,14 +1,16 @@
 # Nostr Specc for Crossword Events
-(might become a NIP sometime)
+(might become an NIP sometime)
 
+## Flow
+Clients join a game by choosing the ID of a **Crossword Game** Event, and polling for the last **Crossword Move** Event by `created_at`. They make a move by submitting their own **Crossword Move** event.
+
+Clients should consider the **Crossword Move** event with the latest `created_at` timestamp the authoritative one. There is no support for offline play or intelligent merging. Issues of spam should be resolved by limiting what pubkeys are considered trusted.
 
 ## Events
 There are three types of crossword events:
 - **Crossword Defintions**: These events contain the layout and clues for a crossword.
 - **Crossword Games**: These events mark a particular instance of a crossword game; they reply to a **Crossword Definition** and are used as a root event for all the moves in a game.
--- **Crossword Move**: These events mark a move in a crossword game. (Open question: Should they be a move or a state? Should we replace old events?)
-
-(open question: Should a Move just contain a single change for all clients to apply, or a copy of the entire new state?)
+- **Crossword Move**: These events mark a move in a crossword game. (Open question: Should they be a move or a state? Should we replace old events?)
 
 ### Crossword Definition
 ```js
@@ -33,8 +35,8 @@ There are three types of crossword events:
 {
     "content": ""
     {
-        ["e", `${iDOfCrosswordDefEvent}`, `${preferredRelayForCrosswordDefEvent}`,
-        "mention"]
+        ["e", `${idOfCrosswordDefEvent}`, `${preferredRelayForCrosswordDefEvent}`,
+        "root"]
     }
     ...restOfEvent
 }
@@ -59,8 +61,5 @@ There are three types of crossword events:
 The Crossword Move event should be replacable; it contains the entire state for one pubkey participating in the game.
 
 
-### Flow
-Clients join a game by choosing the ID of a **Crossword Game** Event, and polling for the last **Crossword Move** Event by `created_at`. They make a move by submitting their own **Crossword Move** event.
 
-Clients should consider the **Crossword Move** event with the latest `created_at` timestamp the authoritative one. There is no support for offline play or intelligent merging. Issues of spam should be resolved by limiting what pubkeys are considered trusted.
 
