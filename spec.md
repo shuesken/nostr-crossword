@@ -1,4 +1,4 @@
-# Nostr Specc for Crossword Events
+# Nostr Spec for Crossword Events
 (might become an NIP sometime)
 
 ## Flow
