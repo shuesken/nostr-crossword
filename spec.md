@@ -24,12 +24,14 @@ content = {
             ...restOfMeta,
         }
     }
+
 tags = []
 ```
 
 ### Crossword Game
 ```js
 content = ''
+
 tags = [
         ["e", idOfCrosswordDefEvent, preferredRelayForCrosswordDefEvent, "root"]
     ],
