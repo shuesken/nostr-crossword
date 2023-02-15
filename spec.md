@@ -52,7 +52,7 @@ There are three types of crossword events:
         }
     },
     "tags": [
-        ["e", `${idOfCrosswordGameEvent}`, "root"],
+        ["e", idOfCrosswordGameEvent, "root"],
     ],
     ...restOfEvent
 }
