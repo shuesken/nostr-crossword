@@ -15,17 +15,19 @@ There are three types of crossword events:
 ### Crossword Definition
 ```js
 content = {
-        "type": "nytsyn", // what data format we're using for the crossword; could be "puz", I choose to name "nytsyn" the format we get from e.g. https://nytsyn.pzzl.com/nytsyn-crossword/nytsyncrossword?date=230210
-        "data": "...", // the content, in the "nytsn" case, just a string
+        "type": "rcw0", // what data format we're using for the crossword; could be "puz", I choose to name "rcw0" the type of react-crossword
+        "data": "...", // the content, in the "rcw0" case, just a string
         "meta": { // any optional, additional metadata a client might choose to display
             "author": "some author",
             "publishedAt": "2023-01-10",
             "canonicalSource": "https://nytimes.com/whatever/the/link/is",
+            "publisher": "New York Times",
+            "category": "Tuesday"
             ...restOfMeta,
         }
     }
 
-tags = []
+tags = ["t", "rcw0"] // data format we're using for the crossword
 ```
 
 ### Crossword Game
@@ -40,7 +42,7 @@ tags = [
 ### Crossword Move
 ```js
 content = { // encoding the state of the crossword
-        type: "simple", // leaving this to be possibly updated in the future
+        type: "simple0", // leaving this to be possibly updated in the future
         data: {
             // crossword state encoding
         }

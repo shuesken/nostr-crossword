@@ -34,8 +34,11 @@ export default function CrosswordRoute() {
     setLoading(true);
     init()
       .then(() => loadCwData(cwId))
-      .then(setCwData)
-      .then(() => registerStateListener(cwGameEventId, handleNewState));
+      .then((game) => {
+        setCwData(game.data);
+      })
+      .then(() => registerStateListener(cwGameEventId, handleNewState))
+      .catch(console.error);
   });
 
   function handleOnCellChange(row: number, col: number, char: string) {

@@ -1,18 +1,20 @@
-import { GridData } from "@jaredreisinger/react-crossword/dist/types";
+import { CluesInputOriginal, GridData } from "@jaredreisinger/react-crossword/dist/types";
 import {
     relayInit,
     generatePrivateKey,
     getPublicKey,
     getEventHash,
     signEvent,
+    validateEvent,
 } from "nostr-tools";
 
 import { type Relay } from "nostr-tools";
-import { useState } from "react";
-import { NostrEvent } from "./types";
+import { Game, NostrEvent } from "./types";
 
 const RELAY_URL = "wss://knostr.neutrine.com";
 const CROSSWORD_STATE_KIND = 19879
+const CROSSWORD_DEFINITION_KIND = 8981
+const CROSSWORD_START_KIND = 2470
 export let cwGameEventId = "mymadeupgameeventid"
 
 let relay: Relay
@@ -26,7 +28,7 @@ let cwState: CwState = {}
 
 
 export function init() {
-    if (relay?.status == 1 || relay?.status == 0) return Promise.resolve()
+    if (relay?.status === 1 || relay?.status === 0) return Promise.resolve()
     if (!privateKey) privateKey = generatePrivateKey()
     return new Promise<void>((resolve, reject) => {
         relay = relayInit(RELAY_URL)
@@ -49,8 +51,9 @@ export async function publishCellChange(row: number, col: number, char: string) 
         kind: CROSSWORD_STATE_KIND,
         created_at: Math.floor(Date.now() / 1000),
         tags: [
-            ['e', cwGameEventId, 'root'],
-            ['d', cwGameEventId]
+            ['e', cwGameEventId, 'somerelay', 'root'],
+            ['d', cwGameEventId],
+            ['expiration', `${Math.floor(Date.now() / 1000) + 24 * 60 * 60}`]
         ],
         content: JSON.stringify(content),
         pubkey: getPublicKey(privateKey)
@@ -60,6 +63,62 @@ export async function publishCellChange(row: number, col: number, char: string) 
     event.sig = signEvent(event, privateKey)
 
     relay!.publish(event)
+}
+
+export async function publishCrosswordDefinition(cluesInput: CluesInputOriginal, meta: any) {
+    await init()
+
+    const type = 'rcw0'
+
+    const content = {
+        type,
+        data: cluesInput,
+        meta
+    }
+    let event: any = {
+        kind: CROSSWORD_DEFINITION_KIND,
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [
+            ['expiration', `${Math.floor(Date.now() / 1000) + 24 * 60 * 60}`],
+            ['t', type]
+        ],
+        content: JSON.stringify(content),
+        pubkey: getPublicKey(privateKey)
+    }
+
+    event.id = getEventHash(event)
+    event.sig = signEvent(event, privateKey)
+    relay!.publish(event)
+}
+
+
+export function getCrosswordDefinitions() {
+    return new Promise<Game[]>((resolve, reject) => {
+        init().then(() => {
+            const games: Game[] = []
+            const sub = relay!.sub([
+                {
+                    kinds: [CROSSWORD_DEFINITION_KIND],
+                }
+            ])
+
+            sub.on('event', (event: NostrEvent) => {
+                try {
+                    JSON.parse(event.content)
+                } catch (e: any) {
+                    return console.error(e)
+                }
+                const content = JSON.parse(event.content) as { data: CluesInputOriginal, meta: any, type: string }
+                games.push({ id: event.id, ...content })
+            })
+
+            sub.on('eose', () => {
+                sub.unsub()
+                resolve(games)
+            })
+        })
+
+    })
 }
 
 export async function registerStateListener(cwGameEventId: string, listener: (state: CwState) => any) {
@@ -81,25 +140,70 @@ export async function registerStateListener(cwGameEventId: string, listener: (st
 
 }
 
-export async function loadCwData(id: string) {
-    // load the data for a crossword
-    const data = {
-        across: {
-            1: {
-                clue: "one plus one",
-                answer: "TWO",
-                row: 0,
-                col: 0,
-            },
-        },
-        down: {
-            2: {
-                clue: "three minus two",
-                answer: "ONE",
-                row: 0,
-                col: 2,
-            },
-        },
-    };
-    return data
+export async function loadCwData(id: string): Promise<Game> {
+    return new Promise<Game>((resolve, reject) => {
+        init().then(() => {
+            const startSub = relay!.sub([
+                {
+                    kinds: [CROSSWORD_START_KIND],
+                    ids: [id]
+                }
+            ])
+            relay.on('error', reject)
+
+            startSub.on('event', (event: NostrEvent) => {
+                const rootTag = event.tags.find(tag => tag[0] === 'e' && tag[3] === 'root')
+                if (!rootTag) return reject()
+                const rootId = rootTag[1]
+                const defSub = relay!.sub([
+                    {
+                        kinds: [CROSSWORD_DEFINITION_KIND],
+                        ids: [rootId]
+                    }
+                ])
+                defSub.on('event', (event: NostrEvent) => {
+                    try {
+                        JSON.parse(event.content)
+                    } catch (e: any) {
+                        reject(e)
+                    }
+                    const content = JSON.parse(event.content) as { data: CluesInputOriginal, meta: any, type: string }
+                    resolve({ id: event.id, ...content })
+                })
+
+                defSub.on('eose', () => reject('could not find game definition'))
+            })
+
+            startSub.on('eose', () => {
+                startSub.unsub()
+            })
+        })
+    })
+}
+
+export async function startGame(id: string) {
+    return new Promise<string>((resolve, reject) => {
+        init().then(() => {
+            const content = ''
+
+            const tags = [
+                ["e", id, RELAY_URL, "root"],
+                ['expiration', `${Math.floor(Date.now() / 1000) + 24 * 60 * 60}`]
+            ]
+
+            let event: any = {
+                kind: CROSSWORD_START_KIND,
+                created_at: Math.floor(Date.now() / 1000),
+                tags,
+                content,
+                pubkey: getPublicKey(privateKey)
+            }
+            event.id = getEventHash(event)
+            event.sig = signEvent(event, privateKey)
+            const pub = relay.publish(event)
+            pub.on('ok', () => resolve(event.id))
+            pub.on('failed', reject)
+        })
+    })
+
 }

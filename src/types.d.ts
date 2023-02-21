@@ -7,3 +7,10 @@ export type NostrEvent = {
     content: string;
     created_at: number;
 };
+
+export type Game = {
+    data: CluesInputOriginal,
+    meta: any,
+    type: string,
+    id: string
+}
