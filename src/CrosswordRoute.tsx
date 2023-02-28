@@ -5,7 +5,6 @@ import {
 } from "@jaredreisinger/react-crossword";
 import { useState, useRef, useEffect } from "react";
 import {
-  cwGameEventId,
   loadCwData,
   publishCellChange,
   registerStateListener,
@@ -33,13 +32,13 @@ export default function CrosswordRoute() {
       .then((game) => {
         setCwData(game.data);
       })
-      .then(() => registerStateListener(cwGameEventId, handleNewState))
+      .then(() => registerStateListener(cwId, handleNewState))
       .catch(console.error);
   }, [cwId]);
 
   function handleOnCellChange(row: number, col: number, char: string) {
     console.log("cell changed", row, col, char);
-    publishCellChange(row, col, char);
+    publishCellChange(row, col, char, cwId);
   }
 
   function handleNewState(state: CwState) {

@@ -7,6 +7,16 @@ import { url } from "inspector";
 import { useState } from "react";
 import { publishCrosswordDefinition } from "./nostr";
 
+export const CATEGORIES = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
 export default function Admin() {
   const [date, setDate] = useState("2023-02-08");
   const [meta, setMeta] = useState({});
@@ -24,6 +34,9 @@ export default function Admin() {
 
     if (sections[0] !== "ARCHIVE")
       throw new Error("doesn't start with 'ARCHIVE");
+
+    if (sections[1].length !== 6)
+      throw new Error("date is not specified: " + sections[1]);
 
     if (parseInt(sections[4]) !== parseInt(sections[5]))
       throw new Error("indicated size is not square");
@@ -96,8 +109,32 @@ export default function Admin() {
       }
     }
 
+    // set category and publication date
+    let dateString = sections[1];
+    let d = new Date();
+
+    d.setUTCFullYear(
+      (parseInt(`20${dateString.slice(0, 2)}`),
+      parseInt(dateString.slice(2, 4)),
+      parseInt(dateString.slice(4, 6)))
+    );
+
+    let dayIndex = d.getDay();
+
+    const days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+
     const meta: any = {
       author: sections[3],
+      category: days[dayIndex],
+      publicationDate: d.toISOString().slice(0, 10),
     };
     return {
       cluesInput,
@@ -117,16 +154,7 @@ export default function Admin() {
     const text = decoder.decode(await res.arrayBuffer());
     const parsed = parseCrossword(text);
     parsed.meta.publisher = "New York Times";
-    const categories = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ];
-    parsed.meta.category = categories[new Date(date).getDay()];
+    parsed.meta.category = CATEGORIES[new Date(date).getDay()];
     parsed.meta.publicationDate = date;
     setCluesInput(parsed.cluesInput);
     setMeta(parsed.meta);

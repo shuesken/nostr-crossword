@@ -1,10 +1,21 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { CATEGORIES } from "./Admin";
 import { getCrosswordDefinitions, init, startGame } from "./nostr";
 import { Game } from "./types";
 
 export default function Home() {
-  const [mondays, setMondays] = useState<Game[]>();
+  const [categories, setCategories] = useState<
+    {
+      category: string;
+      games: Game[];
+    }[]
+  >(
+    CATEGORIES.map((c) => {
+      return { category: c, games: [] };
+    })
+  );
+
   const navigate = useNavigate();
 
   async function handleStartGame(game: Game) {
@@ -16,9 +27,20 @@ export default function Home() {
     init()
       .then(() => getCrosswordDefinitions())
       .then((games) => {
-        const sortedGames = games.sort((a, b) => (a.data < b.data ? 1 : -1));
-        // set all categories actually
-        setMondays(sortedGames);
+        const sortedGames = games.sort((a, b) =>
+          a.meta?.publicationDate < b.meta?.publicationDate ? 1 : -1
+        );
+
+        setCategories((categories) =>
+          categories.map((c) => {
+            return {
+              category: c.category,
+              games: sortedGames.filter(
+                (game) => game.meta.category === c.category
+              ),
+            };
+          })
+        );
       });
   }, []);
 
@@ -34,8 +56,14 @@ export default function Home() {
   return (
     <div>
       <h1>Crosswords</h1>
-      <h2>Mondays</h2>
-      <ul>{mondays?.map(GameLink)}</ul>
+      {categories.map((c) => {
+        return (
+          <div>
+            <h2>{c.category}</h2>
+            <ul>{c.games.map(GameLink)}</ul>
+          </div>
+        );
+      })}
     </div>
   );
 }

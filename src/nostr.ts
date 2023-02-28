@@ -14,7 +14,6 @@ const RELAY_URL = "wss://knostr.neutrine.com";
 const CROSSWORD_STATE_KIND = 19879
 const CROSSWORD_DEFINITION_KIND = 8981
 const CROSSWORD_START_KIND = 2470
-export let cwGameEventId = "mymadeupgameeventid"
 
 let relay: Relay
 let privateKey: string
@@ -37,7 +36,8 @@ export function init() {
     });
 }
 
-export async function publishCellChange(row: number, col: number, char: string) {
+export async function publishCellChange(row: number, col: number, char: string, gameEventId: string) {
+    await init()
     const key = `${row}_${col}`
     if (cwState[key] === char) {
         console.log('not publishing already known cell change')
@@ -49,15 +49,12 @@ export async function publishCellChange(row: number, col: number, char: string) 
         data: cwState
     }
 
-    console.log('publishing cell change', row, col, char)
-
-
     let event: any = {
         kind: CROSSWORD_STATE_KIND,
         created_at: Math.floor(Date.now() / 1000),
         tags: [
-            ['e', cwGameEventId, 'somerelay', 'root'],
-            ['d', cwGameEventId],
+            ['e', gameEventId, 'somerelay', 'root'],
+            ['d', gameEventId],
             ['expiration', `${Math.floor(Date.now() / 1000) + 24 * 60 * 60}`]
         ],
         content: JSON.stringify(content),
