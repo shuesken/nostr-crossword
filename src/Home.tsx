@@ -47,8 +47,10 @@ export default function Home() {
   function GameLink(game: Game) {
     return (
       <li key={game.id}>
-        {game.meta.publicationDate} by {game.meta.author}{" "}
-        <button onClick={() => handleStartGame(game)}>Start Game</button>
+        <a href="#" onClick={(e) => handleStartGame(game)}>
+          {game.meta.publicationDate}
+        </a>{" "}
+        by {game.meta.author}{" "}
       </li>
     );
   }
