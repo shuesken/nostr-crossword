@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import { redirect, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { getCrosswordDefinitions, init, startGame } from "./nostr";
 import { Game } from "./types";
 
 export default function Home() {
-  const [loading, setIsLoading] = useState(false);
   const [mondays, setMondays] = useState<Game[]>();
   const navigate = useNavigate();
 
@@ -14,8 +13,6 @@ export default function Home() {
   }
 
   useEffect(() => {
-    if (loading) return;
-    setIsLoading(true);
     init()
       .then(() => getCrosswordDefinitions())
       .then((games) => {
@@ -23,7 +20,7 @@ export default function Home() {
         // set all categories actually
         setMondays(sortedGames);
       });
-  });
+  }, []);
 
   function GameLink(game: Game) {
     return (

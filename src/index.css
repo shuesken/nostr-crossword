@@ -11,3 +11,34 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.grid {
+  max-width: 32em;
+  padding: 1em;
+}
+
+.clues-wrapper {
+  max-width: 40em;
+  display: flex;
+}
+
+.direction {
+  flex: auto;
+  margin-left: 1em;
+  margin-right: 1em;
+}
+
+.crossword-wrapper {
+  display: flex;
+  flex-direction: row;
+}
+
+.clue {
+  margin-top: 0.5em;
+}
+
+@media (max-width: 60em) {
+  .crossword-wrapper {
+    flex-direction: column;
+  }
+}

@@ -1,11 +1,10 @@
-import { CluesInputOriginal, GridData } from "@jaredreisinger/react-crossword/dist/types";
+import { CluesInputOriginal } from "@jaredreisinger/react-crossword/dist/types";
 import {
     relayInit,
     generatePrivateKey,
     getPublicKey,
     getEventHash,
     signEvent,
-    validateEvent,
 } from "nostr-tools";
 
 import { type Relay } from "nostr-tools";
@@ -45,6 +44,8 @@ export async function publishCellChange(row: number, col: number, char: string) 
         type: "rcw0",
         data: cwState
     }
+
+    console.log('publishing cell change', row, col, char)
 
 
     let event: any = {
@@ -122,6 +123,8 @@ export function getCrosswordDefinitions() {
 }
 
 export async function registerStateListener(cwGameEventId: string, listener: (state: CwState) => any) {
+    let lastEvent: NostrEvent
+    let sawEose = false
     const sub = relay!.sub([
         {
             kinds: [CROSSWORD_STATE_KIND],
@@ -134,8 +137,23 @@ export async function registerStateListener(cwGameEventId: string, listener: (st
         } catch (e: any) {
             return console.error(e)
         }
-        const content = JSON.parse(event.content)
-        listener(content.data)
+
+        if (sawEose) {
+            console.log('got new event after eose was seen')
+            const content = JSON.parse(event.content)
+            return listener(content.data)
+        }
+        else if (!lastEvent || event.created_at > lastEvent.created_at)
+            lastEvent = event
+        else
+            console.log('discarding old event', event)
+    })
+
+    sub.on('eose', (event: NostrEvent) => {
+        console.log('got eose')
+        sawEose = true
+        const content = JSON.parse(lastEvent.content)
+        return listener(content.data)
     })
 
 }

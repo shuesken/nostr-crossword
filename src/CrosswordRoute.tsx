@@ -1,10 +1,9 @@
 import { useSearchParams } from "react-router-dom";
 import {
   Crossword,
-  CrosswordContext,
   CrosswordProviderImperative,
 } from "@jaredreisinger/react-crossword";
-import { useState, useRef, useContext, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   cwGameEventId,
   loadCwData,
@@ -14,6 +13,7 @@ import {
   CwState,
 } from "./nostr";
 import { type CluesInputOriginal } from "@jaredreisinger/react-crossword/dist/types";
+import MyCrossword from "./MyCrossword";
 
 export default function CrosswordRoute() {
   let [searchParams] = useSearchParams();
@@ -22,16 +22,12 @@ export default function CrosswordRoute() {
 
   let cwId = searchParams.get("id") ?? "";
 
-  let [loading, setLoading] = useState<boolean>(false);
-
   const [cwData, setCwData] = useState<CluesInputOriginal>({
     across: {},
     down: {},
   });
 
   useEffect(() => {
-    if (loading) return;
-    setLoading(true);
     init()
       .then(() => loadCwData(cwId))
       .then((game) => {
@@ -39,9 +35,10 @@ export default function CrosswordRoute() {
       })
       .then(() => registerStateListener(cwGameEventId, handleNewState))
       .catch(console.error);
-  });
+  }, [cwId]);
 
   function handleOnCellChange(row: number, col: number, char: string) {
+    console.log("cell changed", row, col, char);
     publishCellChange(row, col, char);
   }
 
@@ -53,9 +50,6 @@ export default function CrosswordRoute() {
   }
 
   return (
-    <div>
-      <p>Id! {cwId}</p>
-      <Crossword data={cwData} onCellChange={handleOnCellChange} ref={ref} />
-    </div>
+    <MyCrossword data={cwData} onCellChange={handleOnCellChange} ref={ref} />
   );
 }
