@@ -3,6 +3,7 @@ import {
   CluesData,
   CluesInputOriginal,
 } from "@jaredreisinger/react-crossword/dist/types";
+import { url } from "inspector";
 import { useState } from "react";
 import { publishCrosswordDefinition } from "./nostr";
 
@@ -11,7 +12,7 @@ export default function Admin() {
   const [meta, setMeta] = useState({});
 
   function parseCrossword(text: string) {
-    const sections = text.split("\n\n");
+    const sections = text.replace("\r", "").split("\n\n");
     const solutionsText = sections[8].replaceAll("%", ""); // in the original format, these mark circled letters; we're ignoring them
     const acrossText = sections[9].trim();
     const downText = sections[10].trim();
@@ -39,6 +40,7 @@ export default function Admin() {
     if (parseInt(sections[6]) !== acrossClues.length)
       throw new Error("different number of across clues than indicated");
 
+    console.log(sections[7], downClues.length, downClues);
     if (parseInt(sections[7]) !== downClues.length)
       throw new Error("different number of down clues than indicated");
 
