@@ -39,6 +39,10 @@ export function init() {
 
 export async function publishCellChange(row: number, col: number, char: string) {
     const key = `${row}_${col}`
+    if (cwState[key] === char) {
+        console.log('not publishing already known cell change')
+        return
+    }
     cwState[key] = char
     const content = {
         type: "rcw0",
@@ -140,6 +144,10 @@ export async function registerStateListener(cwGameEventId: string, listener: (st
 
         if (sawEose) {
             console.log('got new event after eose was seen')
+            if (event.pubkey === getPublicKey(privateKey)) {
+                console.log('discarding own state change')
+                return
+            }
             const content = JSON.parse(event.content)
             return listener(content.data)
         }
